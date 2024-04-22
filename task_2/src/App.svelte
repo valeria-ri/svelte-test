@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  const key: string = "e0304165b5989eb12ecbd489";
+  const key: string = "e0304165b5989eb12ecbd489"; // по-хорошему это надо спрятать куда-нибудь в env :)
 
   const number1name: string = "value1";
   const number2name: string = "value2";
@@ -14,6 +14,8 @@
   let value2: number;
   let supportedCurrencies: string[] = [];
 
+  // рендеринг списка доступных валют и исходных значений
+  // ПЛАНИРУЮ РЕАЛИЗОВАТЬ кэширование для экономии запросов
   onMount(async () => {
     const res = await fetch(
       `https://v6.exchangerate-api.com/v6/${key}/codes`,
@@ -23,6 +25,8 @@
     initConversion();
   });
 
+  // запрос курса валют
+  // ПЛАНИРУЮ РЕАЛИЗОВАТЬ кэширование для экономии запросов
   async function getCurrencyData(a: string, b: string) {
     const res = await fetch(
       `https://v6.exchangerate-api.com/v6/${key}/pair/${a}/${b}`,
@@ -31,15 +35,18 @@
     return await parseFloat(data.conversion_rate.toFixed(4));
   }
 
+  // конвертация
   async function convert(a: string, b: string, value: number): Promise<number> {
     const converted = await getCurrencyData(a, b);
     return value * converted;
   }
 
+  // изначальная конвертация для первого рендеринга страницы
   function initConversion() {
     convert(currency1, currency2, value1).then((res) => (value2 = res));
   }
 
+  // обработчик изменения числовых значений
   function changeValues(event: Event) {
     const value = parseFloat((event.target as HTMLInputElement).value) || 0;
     const name = (event.target as HTMLInputElement).name;
@@ -52,6 +59,7 @@
     }
   }
 
+  // обработчик изменения валют (первая остается ведущей)
   function changeCurrencies(event: Event) {
     const { value, name } = event.target as HTMLInputElement;
     if (name === currency1name) {
