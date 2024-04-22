@@ -16,6 +16,7 @@
 
   // рендеринг списка доступных валют и исходных значений
   // ПЛАНИРУЮ РЕАЛИЗОВАТЬ кэширование для экономии запросов
+  // дописать обработку ошибок
   onMount(async () => {
     const res = await fetch(
       `https://v6.exchangerate-api.com/v6/${key}/codes`,
@@ -27,24 +28,25 @@
 
   // запрос курса валют
   // ПЛАНИРУЮ РЕАЛИЗОВАТЬ кэширование для экономии запросов
-  async function getCurrencyData(a: string, b: string) {
+  // дописать обработку ошибок
+  async function getCurrencyData(baseCurrency: string, targetCurrency: string) {
     const res = await fetch(
-      `https://v6.exchangerate-api.com/v6/${key}/pair/${a}/${b}`,
+      `https://v6.exchangerate-api.com/v6/${key}/pair/${baseCurrency}/${targetCurrency}`,
     );
     const data = await res.json();
     return await parseFloat(data.conversion_rate.toFixed(4));
-  }
+  };
 
   // конвертация
-  async function convert(a: string, b: string, value: number): Promise<number> {
-    const converted = await getCurrencyData(a, b);
+  async function convert(baseCurrency: string, targetCurrency: string, value: number): Promise<number> {
+    const converted = await getCurrencyData(baseCurrency, targetCurrency);
     return value * converted;
-  }
+  };
 
   // изначальная конвертация для первого рендеринга страницы
   function initConversion() {
     convert(currency1, currency2, value1).then((res) => (value2 = res));
-  }
+  };
 
   // обработчик изменения числовых значений
   function changeValues(event: Event) {
@@ -57,7 +59,7 @@
     if (name === number2name) {
       convert(currency2, currency1, value).then((res) => (value1 = res));
     }
-  }
+  };
 
   // обработчик изменения валют (первая остается ведущей)
   function changeCurrencies(event: Event) {
@@ -68,7 +70,7 @@
     if (name === currency2name) {
       convert(currency1, value, value1).then((res) => (value2 = res));
     }
-  }
+  };
 </script>
 
 <main class="page">
