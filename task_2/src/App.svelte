@@ -16,25 +16,36 @@
 
   // рендеринг списка доступных валют и исходных значений
   // ПЛАНИРУЮ РЕАЛИЗОВАТЬ кэширование для экономии запросов
-  // дописать обработку ошибок
+  async function fetchCurrencies(url: string) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP error. Status: ${res.status}`);
+      const data = await res.json();
+      if (!data) throw new Error(`Invalid response`);
+      return data;
+    } catch (error) {
+      console.error(`Failed to fetch data: ${error}`);
+      return null;
+    }
+  }
+
   onMount(async () => {
-    const res = await fetch(
-      `https://v6.exchangerate-api.com/v6/${key}/codes`,
-      );
-    const data = await res.json();
-    supportedCurrencies = await data.supported_codes;
-    initConversion();
+    const apiUrl: string = `https://v6.exchangerate-api.com/v6/${key}/codes`;
+    const data = await fetchCurrencies(apiUrl);
+    if (data && data.supported_codes) {
+      supportedCurrencies = data.supported_codes;
+      initConversion();
+    }
   });
 
-  // запрос курса валют
+  // запрос курса валют для конвертации
   // ПЛАНИРУЮ РЕАЛИЗОВАТЬ кэширование для экономии запросов
   // дописать обработку ошибок
   async function getCurrencyData(baseCurrency: string, targetCurrency: string) {
-    const res = await fetch(
-      `https://v6.exchangerate-api.com/v6/${key}/pair/${baseCurrency}/${targetCurrency}`,
-    );
+    const apiUrl: string = `https://v6.exchangerate-api.com/v6/${key}/pair/${baseCurrency}/${targetCurrency}`;
+    const res = await fetch(apiUrl);
     const data = await res.json();
-    return await parseFloat(data.conversion_rate.toFixed(4));
+    return parseFloat(data.conversion_rate.toFixed(4));
   };
 
   // конвертация
