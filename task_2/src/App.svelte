@@ -15,7 +15,6 @@
   let supportedCurrencies: string[] = [];
 
   // рендеринг списка доступных валют и исходных значений
-  // ПЛАНИРУЮ РЕАЛИЗОВАТЬ кэширование для экономии запросов
   async function fetchCurrencies(url: string) {
     try {
       const res = await fetch(url);
@@ -30,12 +29,19 @@
   }
 
   onMount(async () => {
-    const apiUrl: string = `https://v6.exchangerate-api.com/v6/${key}/codes`;
-    const data = await fetchCurrencies(apiUrl);
-    if (data && data.supported_codes) {
-      supportedCurrencies = data.supported_codes;
-      initConversion();
+    const storedCurrencies = sessionStorage.getItem('supportedCurrencies');
+    if (storedCurrencies) {
+      const currencies = JSON.parse(storedCurrencies);
+      supportedCurrencies = currencies;
+    } else {
+      const apiUrl: string = `https://v6.exchangerate-api.com/v6/${key}/codes`;
+      const data = await fetchCurrencies(apiUrl);
+      if (data && data.supported_codes) {
+        supportedCurrencies = data.supported_codes;
+        sessionStorage.setItem('supportedCurrencies', JSON.stringify(data.supported_codes));
+      }
     }
+    initConversion();
   });
 
   // запрос курса валют для конвертации
